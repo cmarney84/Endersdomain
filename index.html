@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ender's SAML Tools</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .tool-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .tool-card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .output {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .success {
+            background: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.85em;
+            margin-top: 10px;
+            width: auto;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 8px 15px;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #333;
+            border-radius: 3px;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔐 Ender's SAML Tools</h1>
+            <p>SAML Utilities & Debugging Tools</p>
+        </header>
+
+        <div class="tools-grid">
+            <!-- Tool 1: Base64 Encoder/Decoder -->
+            <div class="tool-card">
+                <h2>Base64 Encoder/Decoder</h2>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab(event, 'b64-encode-tab')">Encode</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'b64-decode-tab')">Decode</button>
+                </div>
+
+                <div id="b64-encode-tab" class="tab-content active">
+                    <div class="form-group">
+                        <label>Text to Encode:</label>
+                        <textarea id="b64-input" placeholder="Enter text or XML..."></textarea>
+                    </div>
+                    <button onclick="base64Encode()">Encode to Base64</button>
+                    <div id="b64-encode-output"></div>
+                </div>
+
+                <div id="b64-decode-tab" class="tab-content">
+                    <div class="form-group">
+                        <label>Base64 to Decode:</label>
+                        <textarea id="b64-decode-input" placeholder="Enter Base64 string..."></textarea>
+                    </div>
+                    <button onclick="base64Decode()">Decode from Base64</button>
+                    <div id="b64-decode-output"></div>
+                </div>
+            </div>
+
+            <!-- Tool 2: XML Formatter -->
+            <div class="tool-card">
+                <h2>XML Formatter & Validator</h2>
+                <div class="form-group">
+                    <label>XML Input:</label>
+                    <textarea id="xml-input" placeholder="Paste XML here..."></textarea>
+                </div>
+                <button onclick="formatXML()">Format XML</button>
+                <button onclick="validateXML()" style="margin-top: 8px;">Validate XML</button>
+                <div id="xml-output"></div>
+            </div>
+
+            <!-- Tool 3: SAML Request Generator -->
+            <div class="tool-card">
+                <h2>SAML AuthnRequest Generator</h2>
+                <div class="form-group">
+                    <label>Service Provider Entity ID:</label>
+                    <input type="text" id="sp-entity-id" placeholder="https://yourapp.com/saml" value="https://yourapp.com/saml">
+                </div>
+                <div class="form-group">
+                    <label>Assertion Consumer Service URL:</label>
+                    <input type="text" id="acs-url" placeholder="https://yourapp.com/saml/acs" value="https://yourapp.com/saml/acs">
+                </div>
+                <div class="form-group">
+                    <label>IDP Sign-On URL:</label>
+                    <input type="text" id="idp-sso-url" placeholder="https://idp.example.com/sso" value="https://idp.example.com/sso">
+                </div>
+                <button onclick="generateSAMLRequest()">Generate SAML Request</button>
+                <div id="saml-request-output"></div>
+                <div class="info-box">
+                    💡 This generates a basic SAML AuthnRequest. The result includes both XML and Base64 encoded versions.
+                </div>
+            </div>
+
+            <!-- Tool 4: SAML Metadata Parser -->
+            <div class="tool-card">
+                <h2>SAML Metadata Parser</h2>
+                <div class="form-group">
+                    <label>Metadata XML:</label>
+                    <textarea id="metadata-input" placeholder="Paste SAML metadata XML..."></textarea>
+                </div>
+                <button onclick="parseSAMLMetadata()">Parse Metadata</button>
+                <div id="metadata-output"></div>
+            </div>
+
+            <!-- Tool 5: URL Encoder/Decoder -->
+            <div class="tool-card">
+                <h2>URL Encoder/Decoder</h2>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab(event, 'url-encode-tab')">Encode</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'url-decode-tab')">Decode</button>
+                </div>
+
+                <div id="url-encode-tab" class="tab-content active">
+                    <div class="form-group">
+                        <label>Text to Encode:</label>
+                        <textarea id="url-input" placeholder="Enter text..."></textarea>
+                    </div>
+                    <button onclick="urlEncode()">URL Encode</button>
+                    <div id="url-encode-output"></div>
+                </div>
+
+                <div id="url-decode-tab" class="tab-content">
+                    <div class="form-group">
+                        <label>URL Encoded Text:</label>
+                        <textarea id="url-decode-input" placeholder="Enter URL encoded text..."></textarea>
+                    </div>
+                    <button onclick="urlDecode()">URL Decode</button>
+                    <div id="url-decode-output"></div>
+                </div>
+            </div>
+
+            <!-- Tool 6: Certificate Info Viewer -->
+            <div class="tool-card">
+                <h2>Certificate Info Viewer</h2>
+                <div class="form-group">
+                    <label>Certificate (PEM Format):</label>
+                    <textarea id="cert-input" placeholder="Paste certificate in PEM format (-----BEGIN CERTIFICATE-----)..."></textarea>
+                </div>
+                <button onclick="parseCertificate()">Parse Certificate</button>
+                <div id="cert-output"></div>
+                <div class="info-box">
+                    💡 Extracts common certificate information. For detailed validation, use online certificate checkers.
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Ender's SAML Tools • Open Source SAML Utilities</p>
+            <p style="font-size: 0.85em; margin-top: 5px;">For security testing and development only</p>
+        </footer>
+    </div>
+
+    <script>
+        // ===== Tab Switching =====
+        function switchTab(event, tabName) {
+            event.preventDefault();
+            
+            // Hide all tab contents in this card
+            const card = event.target.closest('.tool-card');
+            const tabs = card.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all buttons in this card
+            const buttons = card.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab and mark button as active
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ===== Base64 Functions =====
+        function base64Encode() {
+            const input = document.getElementById('b64-input').value;
+            if (!input) {
+                showError('b64-encode-output', 'Please enter text to encode');
+                return;
+            }
+            try {
+                const encoded = btoa(unescape(encodeURIComponent(input)));
+                displayOutput('b64-encode-output', encoded, true);
+            } catch (e) {
+                showError('b64-encode-output', 'Encoding error: ' + e.message);
+            }
+        }
+
+        function base64Decode() {
+            const input = document.getElementById('b64-decode-input').value;
+            if (!input) {
+                showError('b64-decode-output', 'Please enter Base64 to decode');
+                return;
+            }
+            try {
+                const decoded = decodeURIComponent(escape(atob(input)));
+                displayOutput('b64-decode-output', decoded, true);
+            } catch (e) {
+                showError('b64-decode-output', 'Decoding error: Invalid Base64');
+            }
+        }
+
+        // ===== XML Functions =====
+        function formatXML() {
+            const input = document.getElementById('xml-input').value;
+            if (!input) {
+                showError('xml-output', 'Please enter XML');
+                return;
+            }
+            try {
+                const formatted = html_beautify(input, {
+                    indent_size: 2,
+                    preserve_newlines: false
+                });
+                displayOutput('xml-output', formatted, true);
+            } catch (e) {
+                showError('xml-output', 'XML formatting error: ' + e.message);
+            }
+        }
+
+        function validateXML() {
+            const input = document.getElementById('xml-input').value;
+            if (!input) {
+                showError('xml-output', 'Please enter XML');
+                return;
+            }
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(input, 'text/xml');
+                
+                if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
+                    showError('xml-output', 'XML is invalid');
+                } else {
+                    showSuccess('xml-output', 'XML is valid ✓');
+                }
+            } catch (e) {
+                showError('xml-output', 'Validation error: ' + e.message);
+            }
+        }
+
+        // ===== URL Functions =====
+        function urlEncode() {
+            const input = document.getElementById('url-input').value;
+            if (!input) {
+                showError('url-encode-output', 'Please enter text');
+                return;
+            }
+            const encoded = encodeURIComponent(input);
+            displayOutput('url-encode-output', encoded, true);
+        }
+
+        function urlDecode() {
+            const input = document.getElementById('url-decode-input').value;
+            if (!input) {
+                showError('url-decode-output', 'Please enter text');
+                return;
+            }
+            try {
+                const decoded = decodeURIComponent(input);
+                displayOutput('url-decode-output', decoded, true);
+            } catch (e) {
+                showError('url-decode-output', 'Decoding error: ' + e.message);
+            }
+        }
+
+        // ===== SAML Request Generator =====
+        function generateSAMLRequest() {
+            const spEntityId = document.getElementById('sp-entity-id').value;
+            const acsUrl = document.getElementById('acs-url').value;
+            const idpSsoUrl = document.getElementById('idp-sso-url').value;
+
+            if (!spEntityId || !acsUrl || !idpSsoUrl) {
+                showError('saml-request-output', 'Please fill in all required fields');
+                return;
+            }
+
+            // Generate a request ID and timestamp
+            const requestId = '_' + Math.random().toString(36).substr(2, 9);
+            const issueInstant = new Date().toISOString();
+
+            // Create SAML AuthnRequest XML
+            const samlRequest = `<samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="${requestId}" Version="2.0" IssueInstant="${issueInstant}" Destination="${idpSsoUrl}" AssertionConsumerServiceURL="${acsUrl}" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST">
+  <saml:Issuer>${spEntityId}</saml:Issuer>
+  <samlp:NameIDPolicy Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress" AllowCreate="true"/>
+  <samlp:RequestedAuthnContext Comparison="exact">
+    <saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:Password</saml:AuthnContextClassRef>
+  </samlp:RequestedAuthnContext>
+</samlp:AuthnRequest>`;
+
+            try {
+                // Format the XML
+                const formatted = html_beautify(samlRequest, { indent_size: 2 });
+                
+                // Encode to Base64
+                const encoded = btoa(unescape(encodeURIComponent(formatted)));
+                
+                // URL encode for use in redirect
+                const urlEncoded = encodeURIComponent(encoded);
+                
+                let output = `<strong>Raw XML:</strong>\n${formatted}\n\n`;
+                output += `<strong>Base64 Encoded:</strong>\n${encoded}\n\n`;
+                output += `<strong>URL Encoded (for redirect):</strong>\n${urlEncoded}\n\n`;
+                output += `<strong>Redirect URL:</strong>\n${idpSsoUrl}?SAMLRequest=${urlEncoded}`;
+                
+                displayOutput('saml-request-output', output, false);
+            } catch (e) {
+                showError('saml-request-output', 'Error generating request: ' + e.message);
+            }
+        }
+
+        // ===== SAML Metadata Parser =====
+        function parseSAMLMetadata() {
+            const input = document.getElementById('metadata-input').value;
+            if (!input) {
+                showError('metadata-output', 'Please enter metadata XML');
+                return;
+            }
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(input, 'text/xml');
+                
+                if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
+                    showError('metadata-output', 'Invalid XML');
+                    return;
+                }
+
+                let output = '';
+
+                // Extract EntityDescriptor
+                const entityDescriptor = xmlDoc.getElementsByTagName('EntityDescriptor')[0];
+                if (entityDescriptor) {
+                    output += `<strong>Entity ID:</strong> ${entityDescriptor.getAttribute('entityID')}\n\n`;
+                }
+
+                // Extract IDPSSODescriptor info
+                const idpSSO = xmlDoc.getElementsByTagName('IDPSSODescriptor')[0];
+                if (idpSSO) {
+                    output += '<strong>Identity Provider (IdP) Info:</strong>\n';
+                    
+                    const ssoServices = xmlDoc.getElementsByTagName('SingleSignOnService');
+                    output += `  <strong>SSO Services:</strong>\n`;
+                    for (let i = 0; i < ssoServices.length; i++) {
+                        const binding = ssoServices[i].getAttribute('Binding');
+                        const location = ssoServices[i].getAttribute('Location');
+                        output += `    • ${binding}\n      ${location}\n`;
+                    }
+                    output += '\n';
+
+                    const sloServices = xmlDoc.getElementsByTagName('SingleLogoutService');
+                    if (sloServices.length > 0) {
+                        output += `  <strong>SLO Services:</strong>\n`;
+                        for (let i = 0; i < sloServices.length; i++) {
+                            const binding = sloServices[i].getAttribute('Binding');
+                            const location = sloServices[i].getAttribute('Location');
+                            output += `    • ${binding}\n      ${location}\n`;
+                        }
+                        output += '\n';
+                    }
+
+                    const certs = xmlDoc.getElementsByTagName('X509Certificate');
+                    if (certs.length > 0) {
+                        output += `  <strong>Certificates:</strong>\n`;
+                        for (let i = 0; i < certs.length; i++) {
+                            output += `    Certificate ${i + 1}:\n`;
+                            output += `    ${certs[i].textContent.substring(0, 50)}...\n`;
+                        }
+                        output += '\n';
+                    }
+                }
+
+                // Extract SPSSODescriptor info
+                const spSSO = xmlDoc.getElementsByTagName('SPSSODescriptor')[0];
+                if (spSSO) {
+                    output += '<strong>Service Provider (SP) Info:</strong>\n';
+                    
+                    const acsServices = xmlDoc.getElementsByTagName('AssertionConsumerService');
+                    if (acsServices.length > 0) {
+                        output += `  <strong>Assertion Consumer Services:</strong>\n`;
+                        for (let i = 0; i < acsServices.length; i++) {
+                            const binding = acsServices[i].getAttribute('Binding');
+                            const location = acsServices[i].getAttribute('Location');
+                            output += `    • ${binding}\n      ${location}\n`;
+                        }
+                    }
+                }
+
+                if (output === '') {
+                    output = 'No recognized SAML metadata elements found.';
+                }
+
+                displayOutput('metadata-output', output, false);
+            } catch (e) {
+                showError('metadata-output', 'Parsing error: ' + e.message);
+            }
+        }
+
+        // ===== Certificate Parser =====
+        function parseCertificate() {
+            const input = document.getElementById('cert-input').value;
+            if (!input) {
+                showError('cert-output', 'Please enter a certificate');
+                return;
+            }
+            try {
+                // Extract certificate content
+                const certMatch = input.match(/-----BEGIN CERTIFICATE-----([\s\S]*?)-----END CERTIFICATE-----/);
+                if (!certMatch) {
+                    showError('cert-output', 'Invalid certificate format. Expected PEM format.');
+                    return;
+                }
+
+                const certBase64 = certMatch[1].replace(/\s/g, '');
+                const certBinary = atob(certBase64);
+                
+                // Parse basic info from Base64
+                let output = '<strong>Certificate Information:</strong>\n\n';
+                output += `<strong>Format:</strong> X.509 (PEM)\n`;
+                output += `<strong>Base64 Length:</strong> ${certBase64.length} characters\n`;
+                output += `<strong>Binary Size:</strong> ${certBinary.length} bytes\n\n`;
+                output += '<strong>Note:</strong> For full certificate details (subject, issuer, validity dates), use an online certificate decoder or OpenSSL.\n\n';
+                output += `<strong>Certificate Preview:</strong>\n${input.substring(0, 200)}...`;
+
+                displayOutput('cert-output', output, false);
+            } catch (e) {
+                showError('cert-output', 'Error parsing certificate: ' + e.message);
+            }
+        }
+
+        // ===== Utility Functions =====
+        function displayOutput(elementId, content, canCopy) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="output">${escapeHtml(content)}</div>`;
+            
+            if (canCopy) {
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.textContent = '📋 Copy to Clipboard';
+                copyBtn.onclick = () => copyToClipboard(content);
+                element.appendChild(copyBtn);
+            }
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="error">❌ ${message}</div>`;
+        }
+
+        function showSuccess(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="success">✓ ${message}</div>`;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy');
+            });
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+    </script>
+</body>
+</html>
